@@ -1,37 +1,37 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { BrandLogo } from '../../components/brand-logo';
-import { login, fetchCurrentUser } from '../../lib/auth-api';
+import { login } from '../../lib/auth-api';
 import { getSession, setSession } from '../../lib/auth';
 
 export default function LoginPage() {
-  const router = useRouter();
   const [email, setEmail] = useState('admin@zeladoria.local');
   const [password, setPassword] = useState('secret123');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [debugMessage, setDebugMessage] = useState<string | null>(null);
 
   useEffect(() => {
     if (getSession()) {
-      router.replace('/');
+      window.location.replace('/');
     }
-  }, [router]);
+  }, []);
 
   async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setLoading(true);
     setError(null);
+    setDebugMessage(null);
     try {
       const result = await login(email, password);
-      const user = await fetchCurrentUser(result.access_token);
       setSession({
         accessToken: result.access_token,
-        user
+        user: result.user
       });
-      router.push(user.role === 'CIDADAO' ? '/nova-ocorrencia' : '/');
-      router.refresh();
+      const destination = result.user.role === 'CIDADAO' ? '/nova-ocorrencia' : '/';
+      setDebugMessage(`Login OK como ${result.user.role}, redirecionando para ${destination}`);
+      window.location.href = destination;
     } catch {
       setError('Não foi possível entrar. Verifique as credenciais.');
     } finally {
@@ -81,6 +81,7 @@ export default function LoginPage() {
               <input value={password} onChange={(e) => setPassword(e.target.value)} type="password" required />
             </label>
             {error ? <p className="login-error">{error}</p> : null}
+            {debugMessage ? <p className="success-message">{debugMessage}</p> : null}
             <button type="submit" className="btn-primary" disabled={loading}>
               {loading ? 'Entrando...' : 'Entrar'}
             </button>
