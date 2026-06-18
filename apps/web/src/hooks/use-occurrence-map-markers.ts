@@ -7,10 +7,11 @@ import {
   OCCURRENCE_STATUS_COLORS,
   occurrencePopupHtml
 } from '../lib/occurrence-map';
+import type { OccurrenceRecord } from '../lib/api-types';
 import type { MapRegionConfig } from '../lib/map-region';
 import type { MapRegionMarker } from '../components/map-region-picker';
 
-export function useOccurrenceMapMarkers(occurrences: any[], region: MapRegionConfig) {
+export function useOccurrenceMapMarkers(occurrences: OccurrenceRecord[], region: MapRegionConfig) {
   const [resolvedCoords, setResolvedCoords] = useState<Record<string, { latitude: number; longitude: number }>>({});
   const [geocoding, setGeocoding] = useState(false);
   const geocodedIds = useRef(new Set<string>());
@@ -43,7 +44,7 @@ export function useOccurrenceMapMarkers(occurrences: any[], region: MapRegionCon
       for (const item of pending) {
         if (cancelled) break;
 
-        const coords = await geocodeAddress(item.address, region.municipio, region.estado);
+        const coords = await geocodeAddress(item.address ?? '', region.municipio, region.estado);
         if (coords) {
           geocodedIds.current.add(item.id);
           setResolvedCoords((current) => ({
@@ -75,14 +76,14 @@ export function useOccurrenceMapMarkers(occurrences: any[], region: MapRegionCon
         return {
           lat: latitude,
           lng: longitude,
-          color: OCCURRENCE_STATUS_COLORS[item.status] ?? OCCURRENCE_STATUS_COLORS.ABERTO,
+          color: OCCURRENCE_STATUS_COLORS[item.status ?? 'ABERTO'] ?? OCCURRENCE_STATUS_COLORS.ABERTO,
           popupHtml: occurrencePopupHtml({
             id: item.id,
-            protocol: item.protocol,
-            title: item.title,
-            description: item.description,
-            status: item.status,
-            priority: item.priority,
+            protocol: item.protocol ?? '',
+            title: item.title ?? undefined,
+            description: item.description ?? '',
+            status: item.status ?? 'ABERTO',
+            priority: item.priority ?? 'MEDIA',
             latitude,
             longitude,
             category: item.category,

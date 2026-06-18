@@ -8,19 +8,13 @@ import { fetchCurrentUser } from '../lib/auth-api';
 import { InstallPWAButton } from '../components/install-pwa-button';
 import { SidebarShell } from '../components/sidebar-shell';
 import { OperationalMapPanel } from '../components/operational-map-panel';
-
-type DashboardData = {
-  occurrences: any[];
-  citizens: any[];
-  users: any[];
-  categories: any[];
-};
+import type { DashboardSnapshot } from '../lib/api-types';
 
 export default function HomePage() {
   const router = useRouter();
   const [session, setSession] = useState<AuthSession | null>(null);
   const [loadingSession, setLoadingSession] = useState(true);
-  const [data, setData] = useState<DashboardData>({ occurrences: [], citizens: [], users: [], categories: [] });
+  const [data, setData] = useState<DashboardSnapshot>({ occurrences: [], citizens: [], users: [], categories: [] });
 
   useEffect(() => {
     const currentSession = getSession();
@@ -51,7 +45,7 @@ export default function HomePage() {
   }, [router]);
 
   const openOccurrences = data.occurrences.filter((item) => item.status === 'ABERTO').length;
-  const inProgressOccurrences = data.occurrences.filter((item) => ['EM_ANALISE', 'ENCAMINHADO', 'EM_EXECUCAO'].includes(item.status)).length;
+  const inProgressOccurrences = data.occurrences.filter((item) => ['EM_ANALISE', 'ENCAMINHADO', 'EM_EXECUCAO'].includes(item.status ?? '')).length;
   const completedOccurrences = data.occurrences.filter((item) => item.status === 'CONCLUIDO').length;
   const canceledOccurrences = data.occurrences.filter((item) => item.status === 'CANCELADO').length;
   const delayedOccurrences = data.occurrences.filter((item) => {
@@ -72,7 +66,7 @@ export default function HomePage() {
   const topCategories = [...data.occurrences]
     .filter((item) => item.category?.name)
     .reduce<Record<string, number>>((acc, item) => {
-      const key = item.category.name;
+      const key = item.category?.name ?? 'Sem categoria';
       acc[key] = (acc[key] ?? 0) + 1;
       return acc;
     }, {});

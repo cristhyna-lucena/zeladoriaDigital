@@ -1,6 +1,7 @@
 'use client';
 
 import { formatOccurrenceStatus, formatPriority } from '../lib/occurrence-map';
+import type { CategoryRecord, DepartmentRecord, NeighborhoodRecord } from '../lib/api-types';
 
 const STATUSES = [
   ['ABERTO', 'Aberto'],
@@ -35,9 +36,9 @@ type KanbanOccurrenceModalProps = {
   saving: boolean;
   error: string | null;
   form: OccurrenceFormValues;
-  categories: any[];
-  neighborhoods: any[];
-  departments: any[];
+  categories: CategoryRecord[];
+  neighborhoods: NeighborhoodRecord[];
+  departments: DepartmentRecord[];
   onClose: () => void;
   onChange: (next: OccurrenceFormValues) => void;
   onSubmit: () => void;
@@ -130,7 +131,7 @@ export function KanbanOccurrenceModal({
                 <option value="">Selecione</option>
                 {categories.map((item) => (
                   <option key={item.id} value={item.id}>
-                    {item.name}
+                    {item.name ?? item.category ?? 'Categoria'}
                   </option>
                 ))}
               </select>
@@ -141,7 +142,7 @@ export function KanbanOccurrenceModal({
                 <option value="">Selecione</option>
                 {neighborhoods.map((item) => (
                   <option key={item.id} value={item.id}>
-                    {item.name}
+                    {item.name ?? item.neighborhood ?? 'Bairro'}
                   </option>
                 ))}
               </select>

@@ -4,7 +4,7 @@ import {
   Injectable,
   NotFoundException
 } from '@nestjs/common';
-import { UserRole } from '@prisma/client';
+import { Prisma, UserRole } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import { AccessScopeService } from '../access/access-scope.service';
 import * as bcrypt from 'bcryptjs';
@@ -32,8 +32,16 @@ export class UsersService {
   }
 
   async create(data: CreateUserDto) {
+    const payload: Prisma.UserCreateInput = {
+      name: data.name,
+      email: data.email,
+      password: await bcrypt.hash(data.password, 10),
+      role: data.role as UserRole,
+      department: data.departmentId ? { connect: { id: data.departmentId } } : undefined,
+      municipality: data.municipalityId ? { connect: { id: data.municipalityId } } : undefined
+    };
     return this.prisma.user.create({
-      data: { ...data, password: await bcrypt.hash(data.password, 10) } as any,
+      data: payload,
       include: { department: { select: { id: true, name: true } } }
     });
   }
@@ -67,18 +75,21 @@ export class UsersService {
   }
 
   async update(id: string, data: UpdateUserDto) {
-    const payload: Record<string, unknown> = { ...data };
+    const payload: Prisma.UserUpdateInput = {
+      name: data.name,
+      email: data.email,
+      role: data.role ? (data.role as UserRole) : undefined,
+      department: data.departmentId ? { connect: { id: data.departmentId } } : data.departmentId === null ? { disconnect: true } : undefined
+    };
     if (data.password) {
       payload.password = await bcrypt.hash(data.password, 10);
-    } else {
-      delete payload.password;
     }
     if (data.role && !['SECRETARIA', 'EQUIPE_CAMPO'].includes(data.role)) {
-      payload.departmentId = null;
+      payload.department = { disconnect: true };
     }
     return this.prisma.user.update({
       where: { id },
-      data: payload as any,
+      data: payload,
       include: { department: { select: { id: true, name: true } } }
     });
   }

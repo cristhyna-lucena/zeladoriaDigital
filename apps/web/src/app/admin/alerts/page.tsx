@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { fetchAlerts, getStoredAccessToken } from '../../../lib/api';
 import { GlobalFiltersBar, type GlobalFilters } from '../../../components/global-filters';
+import type { AlertItem } from '../../../lib/api-types';
 
 export default function AlertsPage() {
   const [filters, setFilters] = useState<GlobalFilters>({
@@ -31,7 +32,7 @@ export default function AlertsPage() {
       <GlobalFiltersBar value={filters} onChange={setFilters} />
       {alerts.isLoading ? <p>Carregando alertas...</p> : null}
       <div className="alert-list">
-        {(alerts.data ?? []).map((item: any) => (
+        {(alerts.data ?? []).map((item: AlertItem) => (
           <article className="list-item" key={item.id}>
             <span className="pill">{item.level}</span>
             <h3>{item.title}</h3>

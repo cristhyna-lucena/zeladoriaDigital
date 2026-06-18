@@ -1,3 +1,16 @@
+import type {
+  AlertItem,
+  CategoryRecord,
+  DashboardSnapshot,
+  DepartmentRecord,
+  NeighborhoodRecord,
+  OccurrenceRecord,
+  RankingCityItem,
+  RankingItem,
+  ServiceOrderRecord,
+  UserRecord,
+  TransparencySummary
+} from './api-types';
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3333';
 
 async function safeJson<T>(response: Response): Promise<T | null> {
@@ -17,10 +30,10 @@ export async function fetchDashboardData(accessToken?: string) {
     fetch(`${API_URL}/categories`, { cache: 'no-store' })
   ]);
 
-  const occurrences = occurrencesRes.status === 'fulfilled' ? await safeJson<any[]>(occurrencesRes.value) : null;
-  const citizens = citizensRes.status === 'fulfilled' ? await safeJson<any[]>(citizensRes.value) : null;
-  const users = usersRes.status === 'fulfilled' ? await safeJson<any[]>(usersRes.value) : null;
-  const categories = categoriesRes.status === 'fulfilled' ? await safeJson<any[]>(categoriesRes.value) : null;
+  const occurrences = occurrencesRes.status === 'fulfilled' ? await safeJson<OccurrenceRecord[]>(occurrencesRes.value) : null;
+  const citizens = citizensRes.status === 'fulfilled' ? await safeJson<unknown[]>(citizensRes.value) : null;
+  const users = usersRes.status === 'fulfilled' ? await safeJson<unknown[]>(usersRes.value) : null;
+  const categories = categoriesRes.status === 'fulfilled' ? await safeJson<unknown[]>(categoriesRes.value) : null;
 
   return {
     occurrences: occurrences ?? [],
@@ -32,16 +45,16 @@ export async function fetchDashboardData(accessToken?: string) {
 
 export async function fetchUsers(accessToken?: string) {
   const response = await fetch(`${API_URL}/users`, { cache: 'no-store', headers: authHeaders(accessToken) });
-  const users = await safeJson<any[]>(response);
+  const users = await safeJson<UserRecord[]>(response);
   return users ?? [];
 }
 
 export async function fetchServiceOrders(accessToken?: string) {
   const response = await fetch(`${API_URL}/occurrences`, { cache: 'no-store', headers: authHeaders(accessToken) });
-  const occurrences = await safeJson<any[]>(response);
+  const occurrences = await safeJson<OccurrenceRecord[]>(response);
   return (occurrences ?? [])
     .flatMap((occurrence) =>
-      (occurrence.serviceOrders ?? []).map((serviceOrder: any) => ({
+      (occurrence.serviceOrders ?? []).map((serviceOrder) => ({
         ...serviceOrder,
         occurrenceProtocol: occurrence.protocol,
         occurrenceTitle: occurrence.title ?? occurrence.description,
@@ -97,13 +110,13 @@ export async function finishServiceOrder(id: string, payload: Record<string, unk
 
 export async function fetchOccurrences(accessToken?: string) {
   const response = await fetch(`${API_URL}/occurrences`, { cache: 'no-store', headers: authHeaders(accessToken) });
-  const occurrences = await safeJson<any[]>(response);
+  const occurrences = await safeJson<OccurrenceRecord[]>(response);
   return occurrences ?? [];
 }
 
 export async function fetchDepartments(accessToken?: string) {
   const response = await fetch(`${API_URL}/departments`, { cache: 'no-store', headers: authHeaders(accessToken) });
-  const departments = await safeJson<any[]>(response);
+  const departments = await safeJson<DepartmentRecord[]>(response);
   return departments ?? [];
 }
 
@@ -213,13 +226,13 @@ export async function saveServiceArea(payload: Record<string, unknown>, accessTo
 
 export async function fetchCategories(accessToken?: string) {
   const response = await fetch(`${API_URL}/categories`, { cache: 'no-store', headers: authHeaders(accessToken) });
-  const categories = await safeJson<any[]>(response);
+  const categories = await safeJson<CategoryRecord[]>(response);
   return categories ?? [];
 }
 
 export async function fetchNeighborhoods(accessToken?: string) {
   const response = await fetch(`${API_URL}/neighborhoods`, { cache: 'no-store', headers: authHeaders(accessToken) });
-  const neighborhoods = await safeJson<any[]>(response);
+  const neighborhoods = await safeJson<NeighborhoodRecord[]>(response);
   return neighborhoods ?? [];
 }
 
@@ -269,7 +282,7 @@ export async function uploadOccurrenceAttachment(occurrenceId: string, file: Fil
 
 export async function fetchMyOccurrences(accessToken?: string) {
   const response = await fetch(`${API_URL}/occurrences/mine`, { cache: 'no-store', headers: authHeaders(accessToken) });
-  const occurrences = await safeJson<any[]>(response);
+  const occurrences = await safeJson<OccurrenceRecord[]>(response);
   return occurrences ?? [];
 }
 
@@ -278,7 +291,7 @@ export async function fetchOccurrenceByProtocol(protocol: string, accessToken?: 
     cache: 'no-store',
     headers: authHeaders(accessToken)
   });
-  return safeJson<any>(response);
+  return safeJson<OccurrenceRecord>(response);
 }
 
 export async function updateOccurrenceStatus(id: string, status: string, accessToken?: string) {
@@ -350,35 +363,35 @@ export function getStoredAccessToken() {
 }
 
 export async function fetchExecutiveDashboard(filters: Record<string, unknown> = {}, accessToken?: string) {
-  return (await fetchAdmin<any>(`/admin/dashboard/executive${buildQueryString(filters)}`, accessToken)) ?? {};
+  return (await fetchAdmin<DashboardSnapshot>(`/admin/dashboard/executive${buildQueryString(filters)}`, accessToken)) ?? { occurrences: [], citizens: [], users: [], categories: [] };
 }
 
 export async function fetchStatusIndicators(filters: Record<string, unknown> = {}, accessToken?: string) {
-  return (await fetchAdmin<any[]>(`/admin/indicators/status${buildQueryString(filters)}`, accessToken)) ?? [];
+  return (await fetchAdmin<{ status: string; quantity: number }[]>(`/admin/indicators/status${buildQueryString(filters)}`, accessToken)) ?? [];
 }
 
 export async function fetchDepartmentIndicators(filters: Record<string, unknown> = {}, accessToken?: string) {
-  return (await fetchAdmin<any[]>(`/admin/indicators/departments${buildQueryString(filters)}`, accessToken)) ?? [];
+  return (await fetchAdmin<RankingItem[]>(`/admin/indicators/departments${buildQueryString(filters)}`, accessToken)) ?? [];
 }
 
 export async function fetchCategoryIndicators(filters: Record<string, unknown> = {}, accessToken?: string) {
-  return (await fetchAdmin<any[]>(`/admin/indicators/categories${buildQueryString(filters)}`, accessToken)) ?? [];
+  return (await fetchAdmin<RankingItem[]>(`/admin/indicators/categories${buildQueryString(filters)}`, accessToken)) ?? [];
 }
 
 export async function fetchNeighborhoodIndicators(filters: Record<string, unknown> = {}, accessToken?: string) {
-  return (await fetchAdmin<any[]>(`/admin/indicators/neighborhoods${buildQueryString(filters)}`, accessToken)) ?? [];
+  return (await fetchAdmin<RankingItem[]>(`/admin/indicators/neighborhoods${buildQueryString(filters)}`, accessToken)) ?? [];
 }
 
 export async function fetchRanking(filters: Record<string, unknown> = {}, accessToken?: string) {
-  return (await fetchAdmin<any[]>(`/admin/ranking${buildQueryString(filters)}`, accessToken)) ?? [];
+  return (await fetchAdmin<{ city?: RankingCityItem[]; departments?: RankingItem[]; neighborhoods?: RankingItem[]; categories?: RankingItem[] }>(`/admin/ranking${buildQueryString(filters)}`, accessToken)) ?? {};
 }
 
 export async function fetchAlerts(filters: Record<string, unknown> = {}, accessToken?: string) {
-  return (await fetchAdmin<any[]>(`/admin/alerts${buildQueryString(filters)}`, accessToken)) ?? [];
+  return (await fetchAdmin<AlertItem[]>(`/admin/alerts${buildQueryString(filters)}`, accessToken)) ?? [];
 }
 
 export async function fetchReportsSummary(filters: Record<string, unknown> = {}, accessToken?: string) {
-  return (await fetchAdmin<any>('/admin/reports/generate', accessToken, {
+  return (await fetchAdmin<Record<string, unknown>>('/admin/reports/generate', accessToken, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(filters)
@@ -386,7 +399,7 @@ export async function fetchReportsSummary(filters: Record<string, unknown> = {},
 }
 
 export async function fetchExecutiveSummary(filters: Record<string, unknown> = {}, accessToken?: string) {
-  return (await fetchAdmin<any>('/admin/ai/executive-summary', accessToken, {
+  return (await fetchAdmin<Record<string, unknown>>('/admin/ai/executive-summary', accessToken, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(filters)
@@ -394,11 +407,11 @@ export async function fetchExecutiveSummary(filters: Record<string, unknown> = {
 }
 
 export async function fetchPublicTransparency(filters: Record<string, unknown> = {}) {
-  return (await fetchAdmin<any>(`/transparency${buildQueryString(filters)}`)) ?? {};
+  return (await fetchAdmin<TransparencySummary>(`/transparency${buildQueryString(filters)}`)) ?? {};
 }
 
 export async function fetchWhatsAppHistory(accessToken?: string, limit = 50) {
-  return (await fetchAdmin<any[]>(`/whatsapp/history?limit=${limit}`, accessToken)) ?? [];
+  return (await fetchAdmin<Array<{ id: string; subject: string; body: string; createdAt: string }>>(`/whatsapp/history?limit=${limit}`, accessToken)) ?? [];
 }
 
 export async function exportAdminGrid(

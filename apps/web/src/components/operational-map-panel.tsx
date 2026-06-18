@@ -5,9 +5,10 @@ import { MapRegionPicker } from './map-region-picker';
 import { fetchServiceAreas, getStoredAccessToken } from '../lib/api';
 import { useOccurrenceMapMarkers } from '../hooks/use-occurrence-map-markers';
 import { DEFAULT_MAP_REGION, mapRegionFromServiceArea } from '../lib/map-region';
+import type { OccurrenceRecord } from '../lib/api-types';
 
 type OperationalMapPanelProps = {
-  occurrences: any[];
+  occurrences: OccurrenceRecord[];
   compact?: boolean;
 };
 

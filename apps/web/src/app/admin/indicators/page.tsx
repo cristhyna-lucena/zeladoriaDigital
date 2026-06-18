@@ -6,6 +6,9 @@ import { Bar, BarChart, CartesianGrid, Cell, Pie, PieChart, ResponsiveContainer,
 import { fetchCategoryIndicators, fetchDepartmentIndicators, fetchNeighborhoodIndicators, fetchStatusIndicators, getStoredAccessToken } from '../../../lib/api';
 import { GlobalFiltersBar, type GlobalFilters } from '../../../components/global-filters';
 
+type StatusIndicator = { status: string; quantity: number };
+type RankIndicator = { label: string; total?: number; averageScore?: number; urgent?: number; category?: string; neighborhood?: string; quantity?: number };
+
 export default function IndicatorsPage() {
   const [filters, setFilters] = useState<GlobalFilters>({
     periodStart: '',
@@ -39,7 +42,7 @@ export default function IndicatorsPage() {
     staleTime: 60_000
   });
 
-  const statusData = (status.data ?? []).map((item: any) => ({ name: item.status, value: item.quantity }));
+  const statusData = (status.data ?? []).map((item: StatusIndicator) => ({ name: item.status, value: item.quantity }));
 
   return (
     <section className="admin-shell">
@@ -78,13 +81,13 @@ export default function IndicatorsPage() {
         <article className="chart-card">
           <h3>Categorias</h3>
           <ul className="rank-list">
-            {(categories.data ?? []).slice(0, 6).map((item: any) => <li className="list-item" key={item.category}>{item.category} - {item.quantity}</li>)}
+            {(categories.data ?? []).slice(0, 6).map((item: RankIndicator) => <li className="list-item" key={item.category ?? item.label}>{item.category ?? item.label} - {item.quantity ?? item.total ?? 0}</li>)}
           </ul>
         </article>
         <article className="chart-card">
           <h3>Bairros</h3>
           <ul className="rank-list">
-            {(neighborhoods.data ?? []).slice(0, 6).map((item: any) => <li className="list-item" key={item.neighborhood}>{item.neighborhood} - {item.total}</li>)}
+            {(neighborhoods.data ?? []).slice(0, 6).map((item: RankIndicator) => <li className="list-item" key={item.neighborhood ?? item.label}>{item.neighborhood ?? item.label} - {item.total ?? 0}</li>)}
           </ul>
         </article>
       </div>

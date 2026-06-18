@@ -20,6 +20,7 @@ import {
   KanbanOccurrenceModal,
   type OccurrenceFormValues
 } from '../../components/kanban-occurrence-modal';
+import type { CategoryRecord, DepartmentRecord, NeighborhoodRecord } from '../../lib/api-types';
 
 type Occurrence = {
   id: string;
@@ -117,9 +118,9 @@ export default function OccurrencesPage() {
   const router = useRouter();
   const [session, setSession] = useState<AuthSession | null>(null);
   const [items, setItems] = useState<Occurrence[]>([]);
-  const [categories, setCategories] = useState<any[]>([]);
-  const [neighborhoods, setNeighborhoods] = useState<any[]>([]);
-  const [departments, setDepartments] = useState<any[]>([]);
+  const [categories, setCategories] = useState<CategoryRecord[]>([]);
+  const [neighborhoods, setNeighborhoods] = useState<NeighborhoodRecord[]>([]);
+  const [departments, setDepartments] = useState<DepartmentRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [busyId, setBusyId] = useState<string | null>(null);
   const [draggingId, setDraggingId] = useState<string | null>(null);
@@ -151,10 +152,10 @@ export default function OccurrencesPage() {
           fetchDepartments(currentSession.accessToken)
         ])
           .then(([occurrences, loadedCategories, loadedNeighborhoods, loadedDepartments]) => {
-            setItems(occurrences);
-            setCategories(loadedCategories);
-            setNeighborhoods(loadedNeighborhoods);
-            setDepartments(loadedDepartments);
+            setItems(occurrences as Occurrence[]);
+            setCategories(loadedCategories as CategoryRecord[]);
+            setNeighborhoods(loadedNeighborhoods as NeighborhoodRecord[]);
+            setDepartments(loadedDepartments as DepartmentRecord[]);
           })
           .catch(() => setItems([]))
           .finally(() => setLoading(false));

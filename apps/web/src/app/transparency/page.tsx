@@ -5,6 +5,7 @@ import { useQuery } from '@tanstack/react-query';
 import { fetchPublicTransparency } from '../../lib/api';
 import { GlobalFiltersBar, type GlobalFilters } from '../../components/global-filters';
 import { SidebarShell } from '../../components/sidebar-shell';
+import type { NamedCountItem, TransparencySummary } from '../../lib/api-types';
 
 export default function TransparencyPage() {
   const [filters, setFilters] = useState<GlobalFilters>({
@@ -23,7 +24,7 @@ export default function TransparencyPage() {
     queryFn: () => fetchPublicTransparency(queryFilters),
     staleTime: 60_000
   });
-  const data = dashboard.data ?? {};
+  const data = dashboard.data ?? {} as TransparencySummary;
 
   return (
     <main className="shell">
@@ -45,7 +46,7 @@ export default function TransparencyPage() {
         <article className="chart-card">
           <h3>Categorias mais frequentes</h3>
           <ul className="rank-list">
-            {(data.categoriasMaisFrequentes ?? []).map((item: any) => (
+            {(data.categoriasMaisFrequentes ?? []).map((item: NamedCountItem) => (
               <li className="list-item" key={item.label}>{item.label} - {item.value}</li>
             ))}
           </ul>
@@ -53,7 +54,7 @@ export default function TransparencyPage() {
         <article className="chart-card">
           <h3>Bairros mais atendidos</h3>
           <ul className="rank-list">
-            {(data.bairrosMaisAtendidos ?? []).map((item: any) => (
+            {(data.bairrosMaisAtendidos ?? []).map((item: NamedCountItem) => (
               <li className="list-item" key={item.label}>{item.label} - {item.value}</li>
             ))}
           </ul>

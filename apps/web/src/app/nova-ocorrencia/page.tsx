@@ -7,8 +7,7 @@ import { createOccurrence, fetchCategories, fetchDepartments, fetchNeighborhoods
 import { fetchCurrentUser } from '../../lib/auth-api';
 import { CitizenShell } from '../../components/citizen-shell';
 import { CitizenMediaPicker, type PendingMedia } from '../../components/citizen-media-picker';
-
-type Neighborhood = { id: string; name: string };
+import type { CategoryRecord, DepartmentRecord, NeighborhoodRecord } from '../../lib/api-types';
 
 const EMPTY_FORM = {
   title: '',
@@ -26,7 +25,7 @@ function hasGpsCoords(coords: { latitude?: number; longitude?: number }) {
 function buildOccurrenceAddress(
   street: string,
   neighborhoodId: string,
-  neighborhoods: Neighborhood[],
+  neighborhoods: NeighborhoodRecord[],
   coords: { latitude?: number; longitude?: number }
 ) {
   if (hasGpsCoords(coords) && !street.trim()) {
@@ -45,9 +44,9 @@ function buildOccurrenceAddress(
 export default function NewOccurrencePage() {
   const router = useRouter();
   const [session, setSession] = useState<AuthSession | null>(null);
-  const [categories, setCategories] = useState<any[]>([]);
-  const [neighborhoods, setNeighborhoods] = useState<Neighborhood[]>([]);
-  const [departments, setDepartments] = useState<any[]>([]);
+  const [categories, setCategories] = useState<CategoryRecord[]>([]);
+  const [neighborhoods, setNeighborhoods] = useState<NeighborhoodRecord[]>([]);
+  const [departments, setDepartments] = useState<DepartmentRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [locating, setLocating] = useState(false);
@@ -79,9 +78,9 @@ export default function NewOccurrencePage() {
           fetchDepartments(currentSession.accessToken)
         ])
           .then(([loadedCategories, loadedNeighborhoods, loadedDepartments]) => {
-            setCategories(loadedCategories);
-            setNeighborhoods(loadedNeighborhoods);
-            setDepartments(loadedDepartments);
+            setCategories(loadedCategories as CategoryRecord[]);
+            setNeighborhoods(loadedNeighborhoods as NeighborhoodRecord[]);
+            setDepartments(loadedDepartments as DepartmentRecord[]);
           })
           .finally(() => setLoading(false));
       });

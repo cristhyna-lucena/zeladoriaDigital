@@ -8,6 +8,7 @@ import { fetchMyOccurrences, fetchOccurrenceByProtocol } from '../../lib/api';
 import { formatOccurrenceStatus, formatPriority } from '../../lib/occurrence-map';
 import { CitizenShell } from '../../components/citizen-shell';
 import { OccurrenceAttachments } from '../../components/occurrence-attachments';
+import type { OccurrenceRecord } from '../../lib/api-types';
 
 type Movement = {
   id: string;
@@ -54,9 +55,9 @@ export default function MyRequestsPage() {
         clearSession();
         router.replace('/login');
       })
-      .finally(() => {
+        .finally(() => {
         fetchMyOccurrences(currentSession.accessToken)
-          .then(setItems)
+          .then((value) => setItems(value as unknown as CitizenOccurrence[]))
           .catch(() => setItems([]))
           .finally(() => setLoading(false));
       });
@@ -67,7 +68,7 @@ export default function MyRequestsPage() {
     const currentSession = getSession();
     if (!currentSession || !protocolQuery.trim()) return;
     const result = await fetchOccurrenceByProtocol(protocolQuery.trim(), currentSession.accessToken);
-    setFoundProtocol(result);
+    setFoundProtocol(result as unknown as CitizenOccurrence);
   }
 
   if (loading) {

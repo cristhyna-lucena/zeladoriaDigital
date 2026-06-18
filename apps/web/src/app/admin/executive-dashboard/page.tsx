@@ -5,6 +5,15 @@ import { useQuery } from '@tanstack/react-query';
 import { fetchExecutiveDashboard, fetchExecutiveSummary } from '../../../lib/api';
 import { GlobalFiltersBar, type GlobalFilters } from '../../../components/global-filters';
 
+type ExecutiveDashboardResponse = {
+  totalOccurrences?: number;
+  openOccurrences?: number;
+  inProgressOccurrences?: number;
+  completedOccurrences?: number;
+  satisfactionIndex?: number;
+  averageResolutionHours?: number;
+};
+
 export default function ExecutiveDashboardPage() {
   const [filters, setFilters] = useState<GlobalFilters>({
     periodStart: '',
@@ -24,10 +33,10 @@ export default function ExecutiveDashboardPage() {
   });
   const summary = useQuery({
     queryKey: ['executive-summary', queryFilters],
-    queryFn: () => fetchExecutiveSummary(queryFilters),
+    queryFn: () => fetchExecutiveSummary(queryFilters) as Promise<{ summary?: string }>,
     staleTime: 60_000
   });
-  const data = dashboard.data ?? {};
+  const data = (dashboard.data ?? {}) as ExecutiveDashboardResponse;
 
   const metrics = [
     ['Total de Ocorrências', data.totalOccurrences ?? 0],

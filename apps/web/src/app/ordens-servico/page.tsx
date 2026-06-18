@@ -11,10 +11,11 @@ import {
 } from '../../lib/api';
 import { fetchCurrentUser } from '../../lib/auth-api';
 import { SidebarShell } from '../../components/sidebar-shell';
+import type { ServiceOrderRecord } from '../../lib/api-types';
 
 type ServiceOrderCard = {
   id: string;
-  priority: string;
+  priority?: string;
   slaHours?: number | null;
   plannedAt?: string | null;
   startedAt?: string | null;
@@ -49,7 +50,7 @@ export default function ServiceOrdersPage() {
       })
       .finally(() => {
         fetchServiceOrders(currentSession.accessToken)
-          .then(setOrders)
+          .then((value) => setOrders(value as ServiceOrderCard[]))
           .catch(() => setOrders([]))
           .finally(() => setLoading(false));
       });
@@ -59,7 +60,7 @@ export default function ServiceOrdersPage() {
     const currentSession = getSession();
     if (!currentSession) return;
     const updated = await fetchServiceOrders(currentSession.accessToken);
-    setOrders(updated);
+    setOrders(updated as ServiceOrderCard[]);
   }
 
   async function handleStart(orderId: string) {

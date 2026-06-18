@@ -12,6 +12,7 @@ import {
 } from '../../../lib/api';
 import { getSession, setSession, type AuthSession } from '../../../lib/auth';
 import { fetchCurrentUser } from '../../../lib/auth-api';
+import type { DepartmentRecord } from '../../../lib/api-types';
 
 import {
   ASSIGNABLE_STAFF_ROLES,
@@ -155,7 +156,14 @@ export default function AdminUsersPage() {
     return true;
   }
 
-  function startEdit(user: any) {
+  function startEdit(user: {
+    id: string;
+    name?: string;
+    email?: string;
+    role?: string;
+    departmentId?: string | null;
+    department?: DepartmentRecord | null;
+  }) {
     if (!canManageUser(user)) return;
     setEditingId(user.id);
     setForm({
@@ -265,7 +273,7 @@ export default function AdminUsersPage() {
                     onChange={(e) => setForm((c) => ({ ...c, departmentId: e.target.value }))}
                   >
                     <option value="">Selecione a secretaria</option>
-                    {(departments.data ?? []).map((department: any) => (
+                    {(departments.data ?? []).map((department: DepartmentRecord) => (
                       <option key={department.id} value={department.id}>
                         {department.name}
                       </option>
@@ -303,7 +311,13 @@ export default function AdminUsersPage() {
         </div>
         {users.isLoading ? <p>Carregando...</p> : null}
         <div className="rank-list">
-          {(users.data ?? []).map((item: any) => (
+          {(users.data ?? []).map((item: {
+            id: string;
+            name: string;
+            email: string;
+            role: string;
+            department?: DepartmentRecord | null;
+          }) => (
             <article className="list-item admin-list-item" key={item.id}>
               <div>
                 <strong>{item.name}</strong>

@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { createDepartment, deleteDepartment, fetchDepartments, getStoredAccessToken } from '../../../lib/api';
+import type { DepartmentRecord } from '../../../lib/api-types';
 
 export default function AdminDepartmentsPage() {
   const queryClient = useQueryClient();
@@ -81,7 +82,7 @@ export default function AdminDepartmentsPage() {
         </div>
         {departments.isLoading ? <p>Carregando...</p> : null}
         <div className="rank-list">
-          {(departments.data ?? []).map((item: any) => (
+          {(departments.data ?? []).map((item: DepartmentRecord) => (
             <article className="list-item admin-list-item" key={item.id}>
               <div>
                 <strong>{item.name}</strong>

@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import * as bcrypt from 'bcryptjs';
 import { CreateCitizenDto } from './dto/create-citizen.dto';
@@ -9,12 +10,15 @@ export class CitizensService {
   constructor(private readonly prisma: PrismaService) {}
 
   async create(data: CreateCitizenDto) {
-    return this.prisma.citizen.create({
-      data: {
-        ...data,
-        password: data.password ? await bcrypt.hash(data.password, 10) : undefined
-      } as any
-    });
+    const payload: Prisma.CitizenCreateInput = {
+      name: data.name,
+      email: data.email,
+      phone: data.phone,
+      cpf: data.cpf,
+      password: data.password ? await bcrypt.hash(data.password, 10) : undefined,
+      municipality: data.municipalityId ? { connect: { id: data.municipalityId } } : undefined
+    };
+    return this.prisma.citizen.create({ data: payload });
   }
 
   findByEmail(email: string) {
@@ -30,8 +34,14 @@ export class CitizensService {
   }
 
   async update(id: string, data: UpdateCitizenDto) {
-    const payload = data.password ? { ...data, password: await bcrypt.hash(data.password, 10) } : data;
-    return this.prisma.citizen.update({ where: { id }, data: payload as any });
+    const payload: Prisma.CitizenUpdateInput = {
+      name: data.name,
+      email: data.email,
+      phone: data.phone,
+      cpf: data.cpf,
+      password: data.password ? await bcrypt.hash(data.password, 10) : undefined
+    };
+    return this.prisma.citizen.update({ where: { id }, data: payload });
   }
 
   remove(id: string) {
